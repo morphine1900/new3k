@@ -136,8 +136,10 @@ usage ()
 	echo "\t-w:\tfind one word."
 }
 
-
-while getopts :fl:p:rs:u:w: OPTION
+if [ $# -lt 1 ]; then
+	usage
+else
+while getopts fl:p:r:s:u:w: OPTION
 do
 	case $OPTION in
 	p)
@@ -152,7 +154,7 @@ do
 		;;
 	r)
 		RANDOMLOOP=50
-		[ "$OPTARG" != "" ] && RANDOMLOOP=$2
+		[ "$OPTARG" != "" ] && RANDOMLOOP=$OPTARG
 		echo "random loop: $RANDOMLOOP"
 		;;
 	l)
@@ -190,6 +192,7 @@ do
 		;;
 	esac
 done
+fi
 
 if [ "$LISTNUM" -gt "0" ]; then
 	awk -v listnum="$LISTNUM" '{if($3==listnum) print $0}' $INPUTFILE.idx > $INPUTFILE.tmp
@@ -231,18 +234,18 @@ elif [ $RANDOMLOOP -gt "0" ]; then
 	if [ "$FILTER" -eq "1" ]; then
 		awk '{if($7=="N") print $0}' $INPUTFILE.idx > tmp2
 	else
-		tmp2=$INPUTFILE.idx
+		cp $INPUTFILE.idx tmp2
 	fi
 
-	FILELINES=`cat $tmp2 | wc -l`		
+	FILELINES=`cat tmp2 | wc -l`		
 	while [ "$RANDOMLOOP" -gt "0" ]
 	do
 		BIG=`date +%S%N`
 		LINE=`expr $BIG % $FILELINES + 1`
-		LINE=`cat $tmp2 | sed -n "${LINE}p"`
+		LINE=`cat tmp2 | sed -n "${LINE}p"`
 		show
 		RANDOMLOOP=`expr $RANDOMLOOP - 1`
 	done
 	
-	rm $tmp2
+	rm tmp2
 fi
